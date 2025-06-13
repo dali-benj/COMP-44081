@@ -2,55 +2,36 @@
 
 __Opportunity No. 44081__
 
-## Overview
+## Project Summary
+The goal is to improve the provided model to forecast ticket sales and redemptions. The original model was too simple, as it did not take into account factors from the real-world that influence travel decisions.
+We have built a smarter and more accurate model. Here's how:
+- Understand the "Why": We added demand drivers such as weather information (temperature, rain, snow, wind), public holidays, and seasonality.
+- Sanitized the data: We removed the Covid years (2020,2021) from our training data as these are clear outliers and are likely to throw our model off. We want our model to reflect typical travel patterns, not a once-in-a-lifetime anomaly.
+- Compared approaches: We tested different models to see which one would perform better. The XGBoost model showed the best performance compared to the others.
+- Delivered results: The final model provides daily forecasts for ticket sales and redemptions that are 50% more accurate than the base model, which enables better planning.
 
-This test is used to evaluate your technical ability and proficiency in writing code and modelling business problems. We will review not only your output, but also the process that you used to arrive at your solution. 
+## Technical description
+To enhance the existing base model, we focused on comprehensive feature engineering, outlier handling, and implementation of machine learning models.
+1. Feature engineering
+The main improvement was the feature engineering process. We augmented the original dataset with several features:
+- Time-based features: day_of_week, day_of_year, month, year were created to capture cyclical patterns.
+- Holiday effects: Using the holiday library, we created a binary feature to flag all Ontario holidays and model the accompanying lift in sales.
+- Weather data: Using the meteostat library, we fetched historical weather data for Toronto. We used information and min/max temperatures, wind speed, snowfall, and rainfall. 
+- Lag feature: We used a 365-day lagged feature to provide a year-over-year signal.
+2. Modeling and Evaluation
+A key decision was to remove the data from 2020 and 2021 from the training dataset. This prevents skewed data from the pandemic period from affecting the training process. To solve the forecasting problem, we compared two distinct model against the baseline within a cross-validation framework.
+- FB Prophet: We implemented it for its powerful and automatic handling of various seasonality and holiday effects.
+- XGBoost: This regressor was used for its capacity to leverage the engineered feature set and capture patterns and complex non-linear relationships between input variables. 
+- Deep Learning Models (LSTM, RNN, etc): Could have been a choice for this problem, but we decided against it as there is no incentive to go for a complicated model when the input data size is very small.
 
-> [!NOTE]
-> The problem presented here is representative of the __typical__ problem we solve. In the interest of fairness and out of respect for your time, a relatively simple problem has been chosen. In practice, the problems we solve are more complex.
+3. Model Performance
+The models were evaluated using Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) accross four cross-validation splits. Mean Absolute Percentage Error was calculated, but it is unreliable due to zeros in the test data.
+- XGBoost model: This was the best performing model, and achieved the lowest MAE (1213) and RMSE (2133). Its ability to capture complex relationships between different input variables proved useful in improving the forecast.
+- Prophet: Showed a good improvement over the base model, but was not as accurate as the gradient boosting model.
 
-
-> [!CAUTION]
-> If you choose to use an AI tool to prepare your submission, you must disclose what tool and how you used it. Submissions that fail to disclose their use of AI will be disqualified. 
-
-
-## Challenge
-
-For this exercise, you will use data from the City of Toronto's Open Data Portal. The dataset is related to [ferry tickets](https://open.toronto.ca/dataset/toronto-island-ferry-ticket-counts/) for the Toronto Island Park service.
-
-We have built a simple forecasting model that uses this data to predict the number of redemptions (i.e., people getting on the ferry) at any given time. It does not perform as well as we would like and it does not have any way to account for uncertainty in the forecast.
-
-Your task is to:
-
-1. Improve the first forecasting model for redemptions. Use the Python code provided as a starting point.  (30% of points).
-2. Create another forecasting model for the number of sales (i.e., people buying tickets). You may do this in Python or R. (40% of points)
-
-*How you go about the task* is important and we are paying attention to process. (20% of points) You will see some template code has already been started in the repository. You should use this code and built off it with proper development workflows - as if you are collaborating with a colleague.
-
-You are free to make assumptions about the business problem and needs - document these assumptions clearly. 
-
-Finally, you should prepare a short summary of what you did, why it is better than what we provided, and how you have approached the business problem (10% of points). You should provide an accessible summary of your work in bullet points and plain language, as well as a more detailed description in standard prose. Word limits apply (see below).
-
-## Expected Outcomes
-
-- An improved forecasting model for redemptions that can be used to forecast redemption volume on a daily basis.
-- A forecasting model for sales.
-- Accessible description of the work (bullet points) for a non-technical client,  not exceeding 200 words.
-- A more detailed description of the work with technical specifics that does not exceed 500 words.
-
-> [!NOTE]
-> Reproducibility is a core focus of our team and all our outputs are held to high standards in this respect. We may run your code to verify your solution. Furthermore, you must only use free and open source tools in your submission to promote reproducibility.  
+Based on this quantitative analysis, the XGBoost model is recommended. Given that the achieved MAE is still high, we may try some other approaches to further improve the model. 
+An example would be to aggregate the forecast at a weekly level to make it easier to predict, and then spread down the weekly prediction to the day level according to a weekly spread profile.
 
 
-## Submission
-
-Provide a link to the completed modelling exercise on a GitHub account. You can choose to keep the repository private or public. If it is private, you must share your repository with the [gom-ta GitHub account](https://github.com/gom-ta). 
-
-
-## Environment
-
-You will need to install several packages to run the existing code
-
-```python
-pip install pandas seaborn matplotlib statsmodels scikit-learn
-```
+## Use of AI
+AI (Google Gemini) was used during the development process as a tool for brainstorming. 
