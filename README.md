@@ -19,7 +19,7 @@ The main improvement was the feature engineering process. We augmented the origi
 - Weather data: Using the meteostat library, we fetched historical weather data for Toronto. We used information and min/max temperatures, wind speed, snowfall, and rainfall. 
 - Lag feature: We used a 365-day lagged feature to provide a year-over-year signal.
 2. Modeling and Evaluation
-A key decision was to remove the data from 2020 and 2021 from the training dataset. This prevents skewed data from the pandemic period from affecting the training process. To solve the forecasting problem, we compared two distinct model against the baseline within a cross-validation framework.
+A key decision was to remove the data from 2020 and 2021 from the training dataset. This prevents skewed data from the pandemic period from affecting the training process. To solve the forecasting problem, we compared two distinct model against the baseline within a cross-validation framework. We also made sure to remove the Redemption Count column from the Sales model and vice-versa, as the two columns (Redemption Count and Sales Count) are both correlated and could be used to forecast each other, but they would not be available in a true forecast situation, so using them to train would be cheating.
 - FB Prophet: We implemented it for its powerful and automatic handling of various seasonality and holiday effects.
 - XGBoost: This regressor was used for its capacity to leverage the engineered feature set and capture patterns and complex non-linear relationships between input variables. 
 - Deep Learning Models (LSTM, RNN, etc): Could have been a choice for this problem, but we decided against it as there is no incentive to go for a complicated model when the input data size is very small.

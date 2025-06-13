@@ -67,7 +67,8 @@ class RedemptionModel:
             cnt += 1
 
     def _engineer_features_for_ml(self, train, test):
-        
+        '''Add weather, seasonality and lagged feature to train and test sets.
+        '''
         train_featured = train.copy()
         test_featured = test.copy()
         combined = pd.concat([train_featured, test_featured])
@@ -76,14 +77,14 @@ class RedemptionModel:
         combined['day_of_year'] = combined.index.dayofyear
         combined['month'] = combined.index.month
         combined['year'] = combined.index.year
-        combined['is_holiday'] = combined.index.map(lambda x: 1 if x in holidays.Canada(prov='ON') else 0)
+        combined['is_holiday'] = combined.index.map(lambda x: 1 if x in holidays.Canada(prov='ON') else 0) #Get Ontario holidays
 
         combined['lag_365'] = combined[self.target_col].shift(365)
         
         start_year = datetime(combined['year'].min(), 1, 1)
         end_year = datetime(combined['year'].max(), 12, 31)
 
-        location = Point(48.6333, -79.45, 269.0)
+        location = Point(48.6333, -79.45, 269.0) #Toronto Weather station
         weather_df = Daily(location, start_year, end_year)
         weather_df = weather_df.fetch()
         #print(weather_df)
@@ -99,9 +100,13 @@ class RedemptionModel:
         return train_final, test_final
     
     def _xgboost_model(self, train, test):
+        '''
+        Calls the feature engineering function, then fits and forecasts using an XGBoost model.
+        '''
         train_features, test_features = self._engineer_features_for_ml(train, test)
 
-        features = [col for col in train_features.columns if (col != self.target_col and col!="Sales Count" and col!="Redemption Count" and col!="_id") ]
+        features = [col for col in train_features.columns if (col != self.target_col and col!="Sales Count" and col!="Redemption Count" and col!="_id") ] 
+        #Need to remove both Sales Count and Redemption Count columns as they are very correlated and could be used to forecast each other, but that would be cheating.
         
         X_train, y_train = train_features[features], train_features[self.target_col]
         X_test, y_test = test_features[features], test_features[self.target_col]
@@ -127,7 +132,9 @@ class RedemptionModel:
         return pd.Series(preds, index=test.index)
 
     def _prophet_model(self, train, test):
-        
+        '''
+        Fits and generates a forecast using FB Prophet
+        '''
         train_prophet = train.reset_index().rename(columns={'Timestamp': 'ds', self.target_col: 'y'})
         ontario_holidays = holidays.Canada(prov='ON', years=list(range(train.index.min().year, test.index.max().year + 1)))
         holidays_df = pd.DataFrame(list(ontario_holidays.items()), columns=['ds', 'holiday'])
